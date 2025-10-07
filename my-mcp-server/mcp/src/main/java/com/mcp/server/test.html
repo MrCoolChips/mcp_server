@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>MCP Completion – NLP Flow</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; margin: 24px; }
+    h1 { margin: 0 0 12px; }
+    .row { margin-bottom: 12px; }
+    label { display: block; font-size: 14px; margin-bottom: 6px; color: #333; }
+    select, input[type="text"], textarea { width: 100%; padding: 10px; box-sizing: border-box; font-size: 14px; }
+    textarea { min-height: 120px; }
+    button { padding: 10px 16px; font-size: 14px; cursor: pointer; }
+    .muted { color: #666; font-size: 12px; }
+    pre { background: #0b1021; color: #d6e2ff; padding: 12px; border-radius: 8px; overflow:auto; }
+    .status { margin-left: 8px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <h1>MCP Completion Tool</h1>
+
+  <div class="row">
+    <label for="prompt">Prompt</label>
+    <textarea id="prompt" placeholder="E.g. Create a new user named Ada Lovelace, email ada@example.com, age 31"></textarea>
+    <div class="muted">Other examples:
+      <br/>• List all users
+      <br/>• Get user by id: 1f6a5d9e-1a2b-4b0b-9c7b-6a0dbe2f3d10
+      <br/>• Update user with id ... (set name to 'Ada L.')
+      <br/>• Delete user with id ...
+    </div>
+  </div>
+
+  <div class="row">
+    <button id="sendBtn" onclick="sendPrompt()">Send</button>
+    <span id="status" class="status"></span>
+  </div>
+
+  <div class="row">
+    <label>Response</label>
+    <pre id="Response">(waiting)</pre>
+  </div>
+
+  <script>
+    async function sendPrompt() {
+      const btn = document.getElementById("sendBtn");
+      const status = document.getElementById("status");
+      const prompt = document.getElementById("prompt").value.trim();
+      const out    = document.getElementById("Response");
+
+      if (!prompt) {
+        alert("Prompt cannot be empty.");
+        return;
+      }
+
+      btn.disabled = true;
+      status.textContent = "Sending...";
+      out.textContent = "(waiting)";
+
+      try {
+        const res = await fetch("http://localhost:8080/admin/nlp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt })
+        });
+
+        const text = await res.text();
+        const label = (res.ok ? "OK " : "ERR ") + res.status;
+
+        try {
+          const parsed = JSON.parse(text);
+          out.textContent = label + "\n" + JSON.stringify(parsed, null, 2);
+        } catch {
+          out.textContent = label + "\n" + text;
+        }
+      } catch (e) {
+        out.textContent = "ERR (fetch failed)\n" + (e && e.message ? e.message : e);
+      } finally {
+        btn.disabled = false;
+        status.textContent = "";
+      }
+    }
+  </script>
+</body>
+</html>
