@@ -31,7 +31,7 @@ This project provides a RESTful API for managing users with CRUD operations, int
 
 ### 1. Clone the repository
 
-git clone https://github.com/MrCoolChips/mcp-server-api.git
+git clone https://github.com/MrCoolChips/mcp_server.git
 
 cd mcp-server
 
